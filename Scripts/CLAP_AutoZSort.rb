@@ -16,12 +16,14 @@ class Game_Event < Game_Character
   #--------------------------------------------------------------------------
   def initialize(map_id, event)
     auto_z_sort_initialize(map_id, event)
+    
+    # You can edit the phrase if you'd like
+    no_z_sort_phrase = "<no_z_sort>"
+    
     @z_sortable = true
     for p in event.pages
       for l in p.list
         if l.code == 108
-          # You can edit the phrase if you'd like
-          no_z_sort_phrase = "<no_z_sort>"
           @z_sortable = false if l.parameters[0] == no_z_sort_phrase
         end
       end
