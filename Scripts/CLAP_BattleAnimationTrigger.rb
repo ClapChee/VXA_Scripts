@@ -96,7 +96,6 @@ class Scene_Battle < Scene_Base
     @log_window.display_use_item(@subject, item)
     @subject.use_item(item)
     @targets = @subject.current_action.make_targets.compact
-    p @targets[0].battler_name
     show_animation(@targets, item.animation_id)
     wait_for_animation
     @targets.each {|target| item.repeats.times { invoke_item(target, item) } } unless $game_temp.battle_animation_triggered
