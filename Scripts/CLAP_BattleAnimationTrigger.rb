@@ -4,7 +4,7 @@
 # ---------------------------------------------------------------------------- #
 # Set the sound effect you'd like to trigger the skill's ability.
 # This means dealing damage, restoring stats and other things of that nature.
-# Put this below YEA - Input Combo Skills script if using it.
+# Put this below the Input Combo Skills script.
 # ---------------------------------------------------------------------------- #
 module CLAP_BattleAnimationTrigger
 # ---------------------------------------------------------------------------- #
@@ -26,13 +26,24 @@ end
 
 class Sprite_Base < Sprite
   alias battle_animation_trigger_animation_process_timing animation_process_timing
-  #--------------------------------------------------------------------------
+  alias battle_animation_trigger_initialize initialize
+#--------------------------------------------------------------------------
   # * SE and Flash Timing Processing
   #--------------------------------------------------------------------------
   def animation_process_timing(timing)
     return unless @animation
-    battle_animation_trigger_animation_process_timing(timing)
-    
+    timing.se.play
+    case timing.flash_scope
+    when 1
+      self.flash(timing.flash_color, timing.flash_duration * @ani_rate)
+    when 2
+      if viewport && !@ani_duplicated
+        viewport.flash(timing.flash_color, timing.flash_duration * @ani_rate)
+      end
+    when 3
+      self.flash(nil, timing.flash_duration * @ani_rate)
+    end
+    return if $game_temp.battle_animation_triggered
     if $game_party.in_battle
       scene = SceneManager.scene
       frame_index = @animation.frame_max
@@ -50,35 +61,47 @@ class Sprite_Base < Sprite
         action = scene.subject.current_action
         user_action = scene.subject.current_action
         item = user_action.item
-        $game_temp.battle_animation_triggered = true
         scene.custom_execute_action
       end
     end
   end
+  #--------------------------------------------------------------------------
+  # * Update Animation
+  #--------------------------------------------------------------------------
+  alias battle_animation_trigger_update_animation update_animation
+  def update_animation
+    return unless animation?
+    battle_animation_trigger_update_animation
+    if @ani_duration % @ani_rate != 0
+      $game_temp.battle_animation_triggered = false
+    end
+  end
 end 
-
 
 class Scene_Battle < Scene_Base
   alias battle_animation_trigger_start start # Start
-  alias battle_animation_trigger_process_action process_action # Process Action
-  alias battle_animation_trigger_end_action process_event # Process Event
+  alias battle_animation_trigger_process_action process_action_end # Process Action
   attr_accessor :targets
   attr_accessor :spriteset
   attr_accessor :custom_animations
+  attr_accessor :triggered
   
   #--------------------------------------------------------------------------
   # * Start
   #--------------------------------------------------------------------------
   def start
     @targets = []
+    @triggered = false
     @using_combo_skills = false
     battle_animation_trigger_start
   end
   #--------------------------------------------------------------------------
   # * Custom execute action
   #--------------------------------------------------------------------------
-  def custom_execute_action
+  def custom_execute_action(target = nil)
     return if !@targets
+    @triggered = true
+    $game_temp.battle_animation_triggered = true
     item = @subject.current_action.item
     for target in @targets
       target.sprite_effect_type = :whiten
@@ -90,7 +113,6 @@ class Scene_Battle < Scene_Base
   # * Use Skill/Item
   #--------------------------------------------------------------------------
   def custom_use_item
-    $game_temp.battle_animation_triggered = false
     item = @subject.current_action.item
     @log_window.clear
     @log_window.display_use_item(@subject, item)
@@ -98,7 +120,8 @@ class Scene_Battle < Scene_Base
     @targets = @subject.current_action.make_targets.compact
     show_animation(@targets, item.animation_id)
     wait_for_animation
-    @targets.each {|target| item.repeats.times { invoke_item(target, item) } } unless $game_temp.battle_animation_triggered
+    @targets.each {|target| item.repeats.times { invoke_item(target, item) } } unless @triggered
+    @triggered = false
   end
   #--------------------------------------------------------------------------
   # * Invoke Skill/Item
@@ -118,6 +141,15 @@ class Scene_Battle < Scene_Base
     @subject.last_target_index = target.index
   end
 
+  #--------------------------------------------------------------------------
+  # * Processing at End of Action
+  #--------------------------------------------------------------------------
+  def process_action_end
+    @triggered = false
+    $game_temp.battle_animation_triggered = false
+    battle_animation_trigger_process_action
+  end
+  
   #--------------------------------------------------------------------------
   # * Patches if using YEA - Input Combo Skills 
   #--------------------------------------------------------------------------  
