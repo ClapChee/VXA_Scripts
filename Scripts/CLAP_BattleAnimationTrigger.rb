@@ -200,6 +200,14 @@ class Window_BattleLog < Window_Selectable
     @num_wait += 1
     @method_wait.call(message_speed) if @method_wait
   end
+  #--------------------------------------------------------------------------
+  # * Wait for effect
+  #--------------------------------------------------------------------------
+  def wait_for_effect
+    return if SceneManager.scene.triggered
+    @num_wait += 1
+    @method_wait.call(message_speed) if @method_wait
+  end
 end
 
 class Game_Battler < Game_BattlerBase 
