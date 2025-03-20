@@ -36,7 +36,7 @@ class Game_CharacterBase
   # Get Z Index
   #--------------------------------------------------------------------------
   def screen_z
-    return @priority_type * 100 if self.is_a?(Game_Event) && !@z_sortable
+    return @priority_type * $game_map.height if self.is_a?(Game_Event) && !@z_sortable
     return @y + @priority_type
   end
 end
