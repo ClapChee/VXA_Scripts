@@ -37,6 +37,7 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   def screen_z
     return @priority_type * $game_map.height if self.is_a?(Game_Event) && !@z_sortable
-    return @y + @priority_type
+    p_check = @priority_type == 0 ? 1 : 0
+    return @y + @priority_type + p_check
   end
 end
