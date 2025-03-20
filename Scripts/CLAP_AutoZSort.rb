@@ -3,7 +3,7 @@
 # INSTRUCTIONS for CLAP_AutoZSort
 # ---------------------------------------------------------------------------- #
 # Automagically makes characters appear above or below others depending on their
-# by position.
+# y position.
 # By default, putting "<no_z_sort>" in a comment anywhere on the events page
 # will have them behave like normal.
 # ---------------------------------------------------------------------------- #
