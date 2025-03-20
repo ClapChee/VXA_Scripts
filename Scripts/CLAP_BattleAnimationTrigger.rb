@@ -4,7 +4,6 @@
 # ---------------------------------------------------------------------------- #
 # Set the sound effect you'd like to trigger the skill's ability.
 # This means dealing damage, restoring stats and other things of that nature.
-# Place below YEA - Input Combo Skills if using.
 # ---------------------------------------------------------------------------- #
 
 module CLAP_BattleAnimationTrigger
@@ -52,7 +51,7 @@ class Sprite_Base < Sprite
         user_action = scene.subject.current_action
         item = user_action.item
         $game_temp.battle_animation_triggered = true
-        scene.custom_execute_action(true)
+        scene.custom_execute_action
       end
     end
   end
@@ -78,20 +77,14 @@ class Scene_Battle < Scene_Base
   #--------------------------------------------------------------------------
   # * Custom execute action
   #--------------------------------------------------------------------------
-  def custom_execute_action(damage = false)
+  def custom_execute_action
     return if !@targets
     item = @subject.current_action.item
-    if damage
-      for target in @targets
-        target.sprite_effect_type = :whiten
-        invoke_item(target, item)
-      end
-      refresh_status
-    else
-      @log_window.clear
-      @log_window.display_use_item(@subject, item)
-      show_animation(@targets, item.animation_id) unless @spriteset.animation?
+    for target in @targets
+      target.sprite_effect_type = :whiten
+      invoke_item(target, item)
     end
+    refresh_status
   end
   #--------------------------------------------------------------------------
   # * Use Skill/Item
