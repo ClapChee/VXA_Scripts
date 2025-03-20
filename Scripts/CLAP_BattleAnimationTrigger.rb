@@ -4,8 +4,8 @@
 # ---------------------------------------------------------------------------- #
 # Set the sound effect you'd like to trigger the skill's ability.
 # This means dealing damage, restoring stats and other things of that nature.
+# Put this below YEA - Input Combo Skills script if using it.
 # ---------------------------------------------------------------------------- #
-
 module CLAP_BattleAnimationTrigger
 # ---------------------------------------------------------------------------- #
 
