@@ -9,7 +9,7 @@
 module CLAP_SmoothBattleLog
 #------------------------------------------------------------------------------#
   # How many frames to wait at the end of a turn?
-    DELAY = 60
+    DELAY = 15
   # How fast should the text slide in? 1 is instant.
     SLIDE_VALUE = 0.15
 #------------------------------------------------------------------------------#

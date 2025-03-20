@@ -1,5 +1,5 @@
 # Makes the combo window fade out if a skill is currently being used.
-# Needs to be below Yanfly Engine Ace - Input Combo Skills
+# Needs to go below YEA - Input Combo Skill related scripts
 
 unless !$imported["YEA-InputComboSkills"]
 ($imported ||= {})["CLAP_InputComboSkillsFade"] = true

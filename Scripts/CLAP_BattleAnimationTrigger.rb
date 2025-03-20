@@ -4,6 +4,7 @@
 # ---------------------------------------------------------------------------- #
 # Set the sound effect you'd like to trigger the skill's ability.
 # This means dealing damage, restoring stats and other things of that nature.
+# Place below YEA - Input Combo Skills if using.
 # ---------------------------------------------------------------------------- #
 
 module CLAP_BattleAnimationTrigger
@@ -85,24 +86,27 @@ class Scene_Battle < Scene_Base
         target.sprite_effect_type = :whiten
         invoke_item(target, item)
       end
+      refresh_status
     else
       @log_window.clear
       @log_window.display_use_item(@subject, item)
       show_animation(@targets, item.animation_id) unless @spriteset.animation?
-      wait_for_animation
-      custom_execute_action(true) unless $game_temp.battle_animation_triggered
     end
   end
   #--------------------------------------------------------------------------
   # * Use Skill/Item
   #--------------------------------------------------------------------------
   def custom_use_item
+    $game_temp.battle_animation_triggered = false
     item = @subject.current_action.item
+    @log_window.clear
     @log_window.display_use_item(@subject, item)
     @subject.use_item(item)
     @targets = @subject.current_action.make_targets.compact
+    p @targets[0].battler_name
     show_animation(@targets, item.animation_id)
-    @targets.each {|target| item.repeats.times { invoke_item(target, item) } }
+    wait_for_animation
+    @targets.each {|target| item.repeats.times { invoke_item(target, item) } } unless $game_temp.battle_animation_triggered
   end
   #--------------------------------------------------------------------------
   # * Invoke Skill/Item
@@ -121,22 +125,7 @@ class Scene_Battle < Scene_Base
     end
     @subject.last_target_index = target.index
   end
-    
-  #--------------------------------------------------------------------------
-  # * End of action
-  #--------------------------------------------------------------------------
-  def process_action
-    battle_animation_trigger_process_action
-    $game_temp.battle_animation_triggered = false
-  end
-  #--------------------------------------------------------------------------
-  # * End of event
-  #--------------------------------------------------------------------------
-  def process_event
-    battle_animation_trigger_end_action
-    $game_temp.battle_animation_triggered = false
-  end
-  
+
   #--------------------------------------------------------------------------
   # * Patches if using YEA - Input Combo Skills 
   #--------------------------------------------------------------------------  
@@ -169,8 +158,7 @@ class Scene_Battle < Scene_Base
       target_dead = true if target.hp == 0
     end
     SceneManager.scene.targets = @subject.current_action.make_targets.compact if target_dead
-    custom_execute_action(false)
-	$game_temp.battle_animation_triggered = false
+    custom_use_item
   end
   
   def break_input_combo?(item)
