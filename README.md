@@ -1,0 +1,3 @@
+HELLO...........
+
+Feel free to use any of these for anything you'd like. All I ask for is credit.
