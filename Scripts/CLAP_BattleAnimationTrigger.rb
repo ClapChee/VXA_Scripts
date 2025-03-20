@@ -27,13 +27,13 @@ end
 class Sprite_Base < Sprite
   alias battle_animation_trigger_animation_process_timing animation_process_timing
   alias battle_animation_trigger_initialize initialize
-#--------------------------------------------------------------------------
+  #--------------------------------------------------------------------------
   # * SE and Flash Timing Processing
   #--------------------------------------------------------------------------
   def animation_process_timing(timing)
     return unless @animation
-    return if $game_temp.battle_animation_triggered
     timing.se.play
+    return if $game_temp.battle_animation_triggered
     case timing.flash_scope
     when 1
       self.flash(timing.flash_color, timing.flash_duration * @ani_rate)
