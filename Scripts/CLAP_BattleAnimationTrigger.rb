@@ -32,6 +32,7 @@ class Sprite_Base < Sprite
   #--------------------------------------------------------------------------
   def animation_process_timing(timing)
     return unless @animation
+    return if $game_temp.battle_animation_triggered
     timing.se.play
     case timing.flash_scope
     when 1
@@ -43,7 +44,6 @@ class Sprite_Base < Sprite
     when 3
       self.flash(nil, timing.flash_duration * @ani_rate)
     end
-    return if $game_temp.battle_animation_triggered
     if $game_party.in_battle
       scene = SceneManager.scene
       frame_index = @animation.frame_max
@@ -193,36 +193,12 @@ end
   
 class Window_BattleLog < Window_Selectable
   #--------------------------------------------------------------------------
-  # * Display Action Results
+  # * Wait
   #--------------------------------------------------------------------------
-  def display_action_results(target, item)
-    if target.result.used
-      last_line_number = line_number
-      display_critical(target, item)
-      display_damage(target, item)
-      display_affected_status(target, item)
-      display_failure(target, item)
-    end
-  end
-  #--------------------------------------------------------------------------
-  # * Display Added State
-  #--------------------------------------------------------------------------
-  def display_added_states(target)
-    target.result.added_state_objects.each do |state|
-      state_msg = target.actor? ? state.message1 : state.message2
-      target.perform_collapse_effect if state.id == target.death_state_id
-      next if state_msg.empty?
-      replace_text(target.name + state_msg)
-    end
-  end
-  #--------------------------------------------------------------------------
-  # * Display Removed State
-  #--------------------------------------------------------------------------
-  def display_removed_states(target)
-    target.result.removed_state_objects.each do |state|
-      next if state.message4.empty?
-      replace_text(target.name + state.message4)
-    end
+  def wait
+    return if SceneManager.scene.triggered
+    @num_wait += 1
+    @method_wait.call(message_speed) if @method_wait
   end
 end
 
