@@ -51,12 +51,13 @@ class Sprite_Base < Sprite
       if timing.se && timing.frame == frame_index
         return unless timing.se.name == CLAP_BattleAnimationTrigger::TRIGGER_SE_NAME
         user = scene.subject
-        $game_temp.battle_effect_multiplier = CLAP_BattleAnimationTrigger::DAMAGE_MULTIPLIER_DIVIDER
-        
+        $game_temp.battle_effect_multiplier = 0
         if timing.flash_scope > 0
           $game_temp.battle_effect_multiplier += timing.flash_color.red
           $game_temp.battle_effect_multiplier += timing.flash_color.green
           $game_temp.battle_effect_multiplier += timing.flash_color.blue
+        else
+          $game_temp.battle_effect_multiplier = CLAP_BattleAnimationTrigger::DAMAGE_MULTIPLIER_DIVIDER
         end
         action = scene.subject.current_action
         user_action = scene.subject.current_action
