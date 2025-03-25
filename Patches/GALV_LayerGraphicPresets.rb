@@ -47,7 +47,7 @@ class Game_Map
       map_note = match ? match[1] : nil
       if map_note
         layers[@map_id].clear if layers[@map_id]
-        break
+        return
       end
     end 
     
