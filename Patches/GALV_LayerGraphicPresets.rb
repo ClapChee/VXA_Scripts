@@ -56,8 +56,7 @@ class Game_Map
       interpreter.refresh_layers if SceneManager.scene.is_a?(Scene_Map)
       return
     end
-    
-    @map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
+
     map = @map
     enabled = true
     switchless = ""
