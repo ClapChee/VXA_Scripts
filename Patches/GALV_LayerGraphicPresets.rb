@@ -16,6 +16,7 @@ module CLAP_LayerGraphicPresets
 PRESETS = { 
   "Desert" =>
   [
+    ["SWITCH", 7],
     ["Desert Background", 0, 0, 255, -10, 0, 0, 0],
     ["Desert Mountains Back", 0, 0, 255, -9, 0, -26, -26],
     ["Desert Clouds", 0.1, 0, 255, -7, 0, -24, -24],
@@ -27,7 +28,7 @@ PRESETS = {
     ["Park Mountains", 0, 0, 255, -8, 0, -26, -26],
     ["Park Trees Background", 0, 0, 255, -7, 0, -20, 32],
     ["Park Sun", 0, 0, 255, -9, 0, -28, 28]
-  ]
+  ],
 }
 end
 
@@ -53,7 +54,7 @@ class Game_Map
     map.note.split("\n").each do |line|
       match = line.match(/<preset:\s*(.+?)\s*>/)
       map_note = match ? match[1] : nil
-      next if map_note.nil?
+      next if map_note.nil? || CLAP_LayerGraphicPresets::PRESETS[map_note].nil?
       switchless = map_note if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] != "SWITCH"
       if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] == "SWITCH"
         enabled = false
@@ -97,7 +98,7 @@ class Game_Player < Game_Character # WE REFRESH ONLY IF DONE TRANSFERING
   end
 end
 
-class Layer_Graphic < Plane
+class Layer_Graphic < Plane # Set the Z value BEFORE we create
   def init_settings
     self.z = @layers[@id][4]
     self.blend_type = @layers[@id][5]
