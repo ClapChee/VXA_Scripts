@@ -114,7 +114,7 @@ class Layer_Graphic < Plane # Set the Z value BEFORE we create
   end
 end
 
-class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
+class Spriteset_Map  # DO NOT!!! refresh if we are mid-transfer
   def refresh_layers
     dispose_layers
     return if $game_player.transferring
