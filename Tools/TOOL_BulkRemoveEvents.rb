@@ -3,10 +3,23 @@
 # 2. Run the game
 # 3. Exit the editor and re-open to make sure you don't save over the changes
 # 4. Remove the script since we're done with it!
-
+#
+# CAUTION! Tools modify the data directly and they do NOT hesitate.
+# Please back up your data folder in case something is changed that you were
+# not anticipating!
+#
 # Set the map ID here! You can find it in the bottom right.
 # Be sure to keep the 0's in place, so map 28 would be: 
 # reference_map_file = "Data/Map028.rvdata2"
+#
+# The reference map contains all the events you would like to delete.
+# This version has safety guards so events that have graphics or  are
+# empty are not removed, provided you don't request to delete an empty 
+# event.
+#
+# For example, an event on the reference map that has Show Message "Hi!"
+# would then be used and if any map has that event, it will be deleted.
+#
 
 reference_map_file = "Data/Map000.rvdata2" # Edit here!
 
