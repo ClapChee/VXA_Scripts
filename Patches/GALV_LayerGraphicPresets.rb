@@ -41,20 +41,25 @@ class Game_Map
   
   def setup(map_id)
     preset_layer_graphics_setup(map_id)
+    map_note = ""
     
     map.note.split("\n").each do |line| # Don't clear if no preset
       match = line.match(/<preset:\s*(.+?)\s*>/)
       map_note = match ? match[1] : nil
       if map_note
         layers[@map_id].clear if layers[@map_id]
-        return
+        break
       end
     end 
+    
+    if map_note == "" # Don't bother with layers if no preset
+      interpreter.refresh_layers if SceneManager.scene.is_a?(Scene_Map)
+      return
+    end
     
     @map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
     map = @map
     enabled = true
-    map_note = ""
     switchless = ""
     
     # We check every note to see if they have a switch
