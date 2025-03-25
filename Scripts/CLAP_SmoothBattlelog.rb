@@ -4,6 +4,9 @@
 # ---------------------------------------------------------------------------- #
 # Simply adds a small slide for the battlelog text. Can be disabled from the
 # options menu if YEA - System Options is present.
+#
+# NOTE! This is kinda old and buggy
+#
 # ---------------------------------------------------------------------------- #
 
 module CLAP_SmoothBattleLog
