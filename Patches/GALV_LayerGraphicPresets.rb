@@ -40,10 +40,17 @@ class Game_Map
   alias preset_layer_graphics_setup setup
   
   def setup(map_id)
-    layers[@map_id].clear if layers[@map_id]
-    
     preset_layer_graphics_setup(map_id)
-        
+    
+    map.note.split("\n").each do |line|
+      match = line.match(/<preset:\s*(.+?)\s*>/)
+      map_note = match ? match[1] : nil
+      if map_note
+        layers[@map_id].clear if layers[@map_id]
+        break
+      end
+    end 
+    
     @map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
     map = @map
     enabled = true
@@ -54,7 +61,7 @@ class Game_Map
     map.note.split("\n").each do |line|
       match = line.match(/<preset:\s*(.+?)\s*>/)
       map_note = match ? match[1] : nil
-      next if map_note.nil? || CLAP_LayerGraphicPresets::PRESETS[map_note].nil?
+      next if map_note.nil?
       switchless = map_note if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] != "SWITCH"
       if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] == "SWITCH"
         enabled = false
@@ -98,7 +105,7 @@ class Game_Player < Game_Character # WE REFRESH ONLY IF DONE TRANSFERING
   end
 end
 
-class Layer_Graphic < Plane # Set the Z value BEFORE we create
+class Layer_Graphic < Plane
   def init_settings
     self.z = @layers[@id][4]
     self.blend_type = @layers[@id][5]
@@ -114,7 +121,7 @@ class Layer_Graphic < Plane # Set the Z value BEFORE we create
   end
 end
 
-class Spriteset_Map  # DO NOT!!! refresh if we are mid-transfer
+class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
   def refresh_layers
     dispose_layers
     return if $game_player.transferring
