@@ -13,8 +13,9 @@
 # reference_map_file = "Data/Map028.rvdata2"
 #
 # The reference map contains all the events you would like to delete.
-# This version has safety guards so events that have graphics are empty
-# are not removed, provided you don't request to delete an empty event.
+# This version has safety guards so events that have graphics or  are
+# empty are not removed, provided you don't request to delete an empty 
+# event.
 #
 # For example, an event on the reference map that has Show Message "Hi!"
 # would then be used and if any map has that event, it will be deleted.
