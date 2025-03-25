@@ -10,6 +10,9 @@ module CLAP_LayerGraphicPresets
   
 #["Filename", AutoScrollX, AutoScrollY, Opacity, Z, Blend, ParallaxX, ParallaxY]
 # Put the preset ID in the map's note like this: <preset: MyPreset>
+#
+# Assign the first layer to "SWITCH" and the first entry after the switch to make
+# it conditional.
 PRESETS = { 
   "Desert" =>
   [
@@ -36,65 +39,86 @@ class Game_Map
   alias preset_layer_graphics_setup setup
   
   def setup(map_id)
+    layers[@map_id].clear if layers[@map_id]
+    
+    preset_layer_graphics_setup(map_id)
+        
     @map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
     map = @map
-    match = map.note.match(/<preset:\s*(.+?)\s*>/)
-    map_note = match ? match[1] : nil
+    enabled = true
+    map_note = ""
+    switchless = ""
     
-    if CLAP_LayerGraphicPresets::PRESETS[map_note]
-      counter = 0
-      for i in CLAP_LayerGraphicPresets::PRESETS[map_note]
-        interpreter.layer(map_id, counter, CLAP_LayerGraphicPresets::PRESETS[map_note][counter])
-        counter += 1
+    # We check every note to see if they have a switch
+    map.note.split("\n").each do |line|
+      match = line.match(/<preset:\s*(.+?)\s*>/)
+      map_note = match ? match[1] : nil
+      next if map_note.nil?
+      switchless = map_note if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] != "SWITCH"
+      if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] == "SWITCH"
+        enabled = false
+        switch_num = CLAP_LayerGraphicPresets::PRESETS[map_note][0][1]
+        switch_val = $game_switches[switch_num]
+        if switch_val
+          enabled = true
+          break
+        end
+        map_note = ""
       end
     end
     
-    preset_layer_graphics_setup(map_id)
-    
-  end
-end
-# ---------------------------------------------------------------------------- #
-# Patches to remove flicker from layers
-# ---------------------------------------------------------------------------- #
-class Layer_Graphic < Plane
-  def init_settings
-    @name = @layers[@id][0]
-    if @layers[0] && @layers[0][@id]
-      @movedx = @layers[0][@id][1].to_f
-      @movedy = @layers[0][@id][2].to_f
-    else
-      @movedx = 0.to_f
-      @movedy = 0.to_f
+    # Process the layers
+    if (CLAP_LayerGraphicPresets::PRESETS[map_note] && enabled) || switchless != ""
+      counter = 0
+      map_note = switchless if map_note == ""
+      for i in CLAP_LayerGraphicPresets::PRESETS[map_note]
+        if CLAP_LayerGraphicPresets::PRESETS[map_note][counter][0] == "SWITCH"
+          counter += 1
+          next
+        end
+        if layers[map_id].nil? || layers[map_id][counter].nil?
+          interpreter.layer(map_id, counter, CLAP_LayerGraphicPresets::PRESETS[map_note][counter])
+        end
+        counter += 1
+      end
     end
-    @width = Cache.layers(@name).width
-    @height = Cache.layers(@name).height
-    pos = initial_display_pos($game_player.new_x, $game_player.new_y)
-    self.ox = 0 + pos[0] * 32 + pos[0] * @layers[@id][6]
-    self.oy = 0 + pos[1] * 32 + pos[1] * @layers[@id][7]
-    self.z = @layers[@id][4]
-    self.blend_type = @layers[@id][5]
-    self.bitmap = Cache.layers(@name)
-  end
-  
-  def initial_display_pos(x, y)
-    if x < $game_map.screen_tile_x
-      x /= 2
-    else
-      x = (x + 2) / 2
-    end
-    if y < $game_map.screen_tile_y
-      y = 0
-    else
-      y = (y - 2) / 2
-    end
-    x = (x + $game_map.width) % $game_map.width
-    y = (y + $game_map.height) % $game_map.height
-    return [x, y]
+    interpreter.refresh_layers if SceneManager.scene.is_a?(Scene_Map)
   end
 end
 
-class Game_Player < Game_Character
-  attr_accessor :new_x
-  attr_accessor :new_y
+class Game_Player < Game_Character # WE REFRESH ONLY IF DONE TRANSFERING
+  attr_accessor :transferring
+  alias original_perform_transfer_patch perform_transfer
+  def perform_transfer
+    if transfer?
+      original_perform_transfer_patch
+      SceneManager.scene.spriteset.refresh_layers if SceneManager.scene.is_a?(Scene_Map)
+    end
+  end
 end
+
+class Layer_Graphic < Plane
+  def init_settings
+    self.z = @layers[@id][4]
+    self.blend_type = @layers[@id][5]
+    @name = @layers[@id][0]
+    self.bitmap = Cache.layers(@name)
+    @width = self.bitmap.width
+    @height = self.bitmap.height
+    
+    if (!@layers[@id].nil?)
+      @movedx = @layers[@id][8].to_f
+      @movedy = @layers[@id][9].to_f
+    end
+  end
+end
+
+class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
+  def refresh_layers
+    dispose_layers
+    return if $game_player.transferring
+    create_layers
+  end
+end
+
 end
