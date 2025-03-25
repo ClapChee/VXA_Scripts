@@ -42,7 +42,7 @@ class Game_Map
   def setup(map_id)
     preset_layer_graphics_setup(map_id)
     
-    map.note.split("\n").each do |line|
+    map.note.split("\n").each do |line| # Don't clear if no preset
       match = line.match(/<preset:\s*(.+?)\s*>/)
       map_note = match ? match[1] : nil
       if map_note
@@ -128,5 +128,4 @@ class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
     create_layers
   end
 end
-
 end
