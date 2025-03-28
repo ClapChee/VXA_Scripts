@@ -139,7 +139,7 @@ class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
 end
 
 # ---------------------------------------------------------------------------- #
-# Patches to allow for default Parralax behaviour for layers
+# Patches to allow for default Parallax behaviour for layers
 # ---------------------------------------------------------------------------- #
 
 class Layer_Graphic < Plane
