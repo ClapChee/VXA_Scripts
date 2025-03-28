@@ -7,27 +7,31 @@ unless !$imported["Galv_Layers"]
 # initialize them when a map is loaded.
 # ---------------------------------------------------------------------------- #
 module CLAP_LayerGraphicPresets
-  
+#
 #["Filename", AutoScrollX, AutoScrollY, Opacity, Z, Blend, ParallaxX, ParallaxY]
 # Put the preset ID in the map's note like this: <preset: MyPreset>
 #
+# Setting either Parallax X or ParallaxY to nil will make that function like a
+# regular parallax; calculating the offset via map and image size
+#
 # Assign the first layer to "SWITCH" and the first entry after the switch to make
 # it conditional.
+#
 PRESETS = { 
   "Desert" =>
   [
-    ["SWITCH", 7],
-    ["Desert Background", 0, 0, 255, -10, 0, 0, 0],
+	["SWITCH", 7],
+    ["Desert Background", 0, 0, 255, -10, 0, nil, nil],
     ["Desert Mountains Back", 0, 0, 255, -9, 0, -26, -26],
     ["Desert Clouds", 0.1, 0, 255, -7, 0, -24, -24],
     ["Desert Mountains", 0, 0, 255, -8, 0, -22, -22]
   ],
   "Park" =>
   [
-    ["Park Background", 0, 0, 255, -10, 0, 0, 0],
+    ["Park Background", 0, 0, 255, -10, 0, nil, nil],
     ["Park Mountains", 0, 0, 255, -8, 0, -26, -26],
     ["Park Trees Background", 0, 0, 255, -7, 0, -20, 32],
-    ["Park Sun", 0, 0, 255, -9, 0, -28, 28]
+    ["Park Sun", 0, 0, 255, -9, 0, nil, nil]
   ],
 }
 end
@@ -56,7 +60,8 @@ class Game_Map
       interpreter.refresh_layers if SceneManager.scene.is_a?(Scene_Map)
       return
     end
-
+    
+    @map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
     map = @map
     enabled = true
     switchless = ""
@@ -130,6 +135,76 @@ class Spriteset_Map  # DO NOT!!! Refresh if we are mid-transfer
     dispose_layers
     return if $game_player.transferring
     create_layers
+  end
+end
+
+# ---------------------------------------------------------------------------- #
+# Patches to allow for default Parralax behaviour for layers
+# ---------------------------------------------------------------------------- #
+
+class Layer_Graphic < Plane
+  def update_movement
+    if ((@layers[@id][8] != @movedx) || (@layers[@id][9] != @movedy))
+      @movedx = @layers[@id][1]
+      @movedy = @layers[@id][2]
+    end
+    
+    if @layers[@id][6].nil? && @layers[@id][7].nil? # We patch in here
+      self.ox = parallax_ox(bitmap)
+      self.oy = parallax_oy(bitmap)
+    else
+      self.ox = 0 + $game_map.display_x * 32 + @movedx + xoffset
+      self.oy = 0 + $game_map.display_y * 32 + @movedy + yoffset
+    end
+    @movedx += @layers[@id][1]
+    @movedy += @layers[@id][2]
+    @movedx = 0 if @movedx >= @width
+    @movedy = 0 if @movedy >= @height
+    
+    @layers[@id][8] = @movedx.to_f
+    @layers[@id][9] = @movedy.to_f
+    if (SceneManager.scene_is?(Scene_Battle))
+      if (!$game_map.blayers.nil?)
+        if (!$game_map.blayers[@id].nil?)
+          $game_map.blayers[@id][8] = @movedx.to_f
+          $game_map.blayers[@id][9] = @movedy.to_f
+        end
+      end
+    else
+      if (!$game_map.layers[$game_map.map_id].nil?)
+        $game_map.layers[$game_map.map_id][@id][8] = @movedx.to_f
+        $game_map.layers[$game_map.map_id][@id][9] = @movedy.to_f
+      end
+    end
+    
+    self.z = @layers[@id][4]
+    self.blend_type = @layers[@id][5]
+  end
+  
+  # We yoink these straight from the base code
+  #--------------------------------------------------------------------------
+  # * Calculate X Coordinate of Parallax Display Origin
+  #--------------------------------------------------------------------------
+  def parallax_ox(bitmap)
+    if $game_map.map.parallax_loop_x
+      $game_map.display_x * 16
+    else
+      w1 = [bitmap.width - Graphics.width, 0].max
+      w2 = [$game_map.map.width * 32 - Graphics.width, 1].max
+      $game_map.display_x * 32 * w1 / w2
+    end
+  end
+  #--------------------------------------------------------------------------
+  # * Calculate Y Coordinate of Parallax Display Origin
+  #--------------------------------------------------------------------------
+  def parallax_oy(bitmap)
+    if $game_map.map.parallax_loop_y
+      $game_map.display_y * 16
+    else
+      h1 = [bitmap.height - Graphics.height, 0].max
+      h2 = [$game_map.map.height * 32 - Graphics.height, 1].max
+      $game_map.display_y * 32 * h1 / h2
+    end
   end
 end
 end
