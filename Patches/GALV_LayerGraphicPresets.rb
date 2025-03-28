@@ -70,7 +70,7 @@ class Game_Map
     map.note.split("\n").each do |line|
       match = line.match(/<preset:\s*(.+?)\s*>/)
       map_note = match ? match[1] : nil
-      next if map_note.nil?
+      next if map_note.nil? || CLAP_LayerGraphicPresets::PRESETS[map_note].nil?
       switchless = map_note if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] != "SWITCH"
       if CLAP_LayerGraphicPresets::PRESETS[map_note][0][0] == "SWITCH"
         enabled = false
